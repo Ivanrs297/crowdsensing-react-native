@@ -204,6 +204,11 @@ export default {
       marginVertical: 10,
       marginHorizontal: 20,
   },
+  btnPrimaryDisabled: {
+    backgroundColor: "gray",
+    marginVertical: 10,
+    marginHorizontal: 20,
+  },
   txtBtnPrimary: {
       color: "#2c3e50",
   },
@@ -218,8 +223,15 @@ export default {
     marginVertical: 5,
     padding: 10,
     fontSize: 14,
+  },
 
-  }
+  picker: {
+    backgroundColor: "white",
+    width: deviceWidth - 40,
+    marginVertical: 5,
+    padding: 10,
+    paddingLeft: 8,
+  },
 
 
 };

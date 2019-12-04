@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from "react";
-import { Picker, Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
+import { Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
+import axios from 'axios';
 import {
   Container,
   Header,
@@ -15,6 +16,7 @@ import {
   List,
   ListItem,
   Spinner,
+  Picker
 } from "native-base";
 import moment from "moment";
 import 'moment/locale/es'
@@ -32,13 +34,13 @@ import {
  import { 
   register,
  } from "../../actions/auth"
+ import config from "../../config"
 
 var { width, height } = Dimensions.get('window');
 
 function mapStateToProps(state) {
   return {
     lastVariable: state.variables.lastVariable,
-    loadingSpinner: state.loaders.loadingSpinner
   };
 }
 
@@ -62,6 +64,7 @@ class LogIn extends Component {
         age: "",
         area: "",
         place: "",
+        loadingSpinner: false
     };
   }
 
@@ -69,20 +72,55 @@ class LogIn extends Component {
   }
 
   handleRegister() {
-    this.props.setLoadingSpinner(true)
-
+    this.setState({loadingSpinner: true})
     let registerObj = {
-        email: this.state.user,
+        username: this.state.user,
         password: this.state.password,
-        fname: this.state.fname,
-        lname: this.state.lname,
+        fullname: this.state.fname + " " + this.state.lname,
         genre: this.state.genre,
         age: this.state.age,
-        area: this.state.area,
-        place: this.state.place,
+        speciality: this.state.area,
     }
-    this.props.register(registerObj);
 
+    let URL = `${config.serverSideUrl}:${config.port}/signup`;
+
+    axios.post( URL, registerObj )
+      .then( res => {
+        console.log("register RES: ", res.data);
+        if (res.data.success){
+          Actions.home()
+          return;
+        }
+        
+      })
+      .catch(e => {
+        console.log("ERROR register", e.response);
+        Alert.alert(
+            'Error',
+            'Ha habido un problema, intenta de nuevo',
+            [
+                {text: 'Aceptar', onPress: () => console.log('OK Pressed')},
+            ],
+             { cancelable: false }
+            )
+      })
+      this.setState({loadingSpinner: false})
+  }
+
+  validateForm() {
+    if (!this.state.user || 
+        !this.state.password || 
+        !this.state.fname || 
+        !this.state.genre || 
+        !this.state.age || 
+        !this.state.place || 
+        !this.state.area || 
+        !this.state.lname
+    ) {
+      return true
+    } else {
+      return false
+    }
   }
 
   render() {
@@ -93,7 +131,7 @@ class LogIn extends Component {
             source={require('../../../assets/icon_white.png')}
             style={styles.logoImg}
           />
-        <Text style={styles.title}>Crowdsensing</Text>
+        <Text style={styles.title}>GeoSensing</Text>
 
         <TextInput
             style={styles.input}
@@ -134,15 +172,44 @@ class LogIn extends Component {
             secureTextEntry
         />
 
-        <TextInput
-          style={styles.input}
-          onChangeText={(area) => this.setState({area})}
-          value={this.state.area}
+        <Picker
+          note
+          mode="dropdown"
+          style={styles.picker}
+          selectedValue={this.state.genre}
+          onValueChange={(genre) => this.setState({genre})}
+          itemStyle={{color: "black"}}
+          itemTextStyle={{color: "black"}}
+          textStyle={{color: "black", fontSize: 14}}
+          headerBackButtonText="Atras"
+          placeholder="Sexo"
+          placeholderStyle={{color: "gray"}}
+          headerStyle={{backgroundColor: "#2c3e50"}}
+        >
+          <Picker.Item label="Mujer" value="0" />
+          <Picker.Item label="Hombre" value="1" />
+        </Picker>
+
+        <Picker
+          note
+          mode="dropdown"
+          style={styles.picker}
+          selectedValue={this.state.area}
+          onValueChange={(area) => this.setState({area})}
+          itemStyle={{color: "black"}}
+          itemTextStyle={{color: "black"}}
+          textStyle={{color: "black", fontSize: 14}}
+          headerBackButtonText="Atras"
           placeholder="Especialidad"
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+          placeholderStyle={{color: "gray"}}
+          headerStyle={{backgroundColor: "#2c3e50"}}
+        >
+          <Picker.Item label="Computación" value="1" />
+          <Picker.Item label="Telecomunicaciones" value="2" />
+          <Picker.Item label="Control" value="3" />
+          <Picker.Item label="Diseño Electrónico" value="4" />
+          <Picker.Item label="Potencia" value="5" />
+        </Picker>
 
         <TextInput
           style={styles.input}
@@ -155,23 +222,38 @@ class LogIn extends Component {
           keyboardType="number-pad"
         />
 
-        <TextInput
-          style={styles.input}
-          onChangeText={(place) => this.setState({place})}
-          value={this.state.place}
+        <Picker
+          note
+          mode="dropdown"
+          style={styles.picker}
+          selectedValue={this.state.place}
+          onValueChange={(place) => this.setState({place})}
+          itemStyle={{color: "black"}}
+          itemTextStyle={{color: "black"}}
+          textStyle={{color: "black", fontSize: 14}}
+          headerBackButtonText="Atras"
           placeholder="Lugar de procedencia"
-          placeholderTextColor="gray"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+          placeholderStyle={{color: "gray"}}
+          headerStyle={{backgroundColor: "#2c3e50"}}
+        >
+          <Picker.Item label="Guadalajara" value="1" />
+          <Picker.Item label="Cuba" value="2" />
+          <Picker.Item label="Colima" value="3" />
+          <Picker.Item label="Tepic" value="4" />
+          <Picker.Item label="Cuencamé" value="5" />
+          <Picker.Item label="Mazatlán" value="6" />
+          <Picker.Item label="Cualiacán" value="7" />
+          <Picker.Item label="Coahuila" value="8" />
+          <Picker.Item label="CDMX" value="9" />
+        </Picker>
 
         <Button
             block
-            style={styles.btnPrimary}
-            // onPress={() => this.handleRegister()}
-            disabled={!this.state.user || !this.state.password || !this.state.fname || !this.state.lname}
+            style={this.validateForm() ? styles.btnPrimaryDisabled : styles.btnPrimary}
+            onPress={() => this.handleRegister()}
+            disabled={this.validateForm()}
         >
-          {this.props.loadingSpinner ? 
+          {this.state.loadingSpinner ? 
             <Spinner color="black" />
           : <Text style={styles.txtBtnPrimary}>Registrarse</Text>
           }

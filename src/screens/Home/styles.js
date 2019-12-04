@@ -156,7 +156,7 @@ export default {
     marginRight: 10,
   },
   header: {
-    backgroundColor: "#27ae60",
+    backgroundColor: "#35495e",
     borderBottomWidth: 0,
   },
   listText: {

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Crowdsensing",
-    "slug": "crowdsensing-react",
+    "name": "GeoSensing",
+    "slug": "geosensing-react",
     "privacy": "public",
     "sdkVersion": "35.0.0",
     "platforms": [

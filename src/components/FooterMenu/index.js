@@ -41,7 +41,7 @@ class FooterMenu extends Component {
                     <Button
                         vertical
                         onPress={() => {
-                            Actions.home()
+                            // Actions.home()
                         }}
                         style={styles.footerTab}
                     >
@@ -55,21 +55,7 @@ class FooterMenu extends Component {
                     <Button
                         vertical
                         onPress={() => {
-                            Actions.historical();
-                        }}
-                        style={styles.footerTab}
-                    >
-                        <Icon
-                            name="list"
-                            style={styles.iconImg}
-                        />
-                        <Text style={styles.footerMenu}>Historial</Text>
-                    </Button>
-
-                    <Button
-                        vertical
-                        onPress={() => {
-                            Actions.profile();
+                            // Actions.profile();
                         }}
                         style={styles.footerTab}
                     >

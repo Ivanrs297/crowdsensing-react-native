@@ -68,7 +68,7 @@ class SignUp extends Component {
             source={require('../../../assets/icon_white.png')}
             style={styles.logoImg}
           />
-        <Text style={styles.title}>Crowdsensing</Text>
+        <Text style={styles.title}>GeoSensing</Text>
 
 
           <Button 

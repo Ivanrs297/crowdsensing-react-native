@@ -1,6 +1,7 @@
 // @flow
 import React, { Component } from "react";
-import { Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
+import axios from 'axios';
+import { StatusBar, SafeAreaView, Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
 import {
   Container,
   Header,
@@ -15,6 +16,7 @@ import {
   List,
   ListItem,
   Spinner,
+  Switch
 } from "native-base";
 import moment from "moment";
 import 'moment/locale/es'
@@ -25,125 +27,155 @@ import FooterMenu from "../../components/FooterMenu";
 import {Actions, ActionConst} from 'react-native-router-flux';
 import { openDrawer, closeDrawer } from "../../actions/drawer";
 import { setLoadingSpinner } from "../../actions/loaders"
-import { 
-  fetchLastVariable,
-  deleteVariable
- } from "../../actions/smartponia"
+import Constants from 'expo-constants';
+import * as Location from 'expo-location';
+import * as Permissions from 'expo-permissions';
+import config from "../../config"
+
 
 var { width, height } = Dimensions.get('window');
 
 function mapStateToProps(state) {
   return {
-    lastVariable: state.variables.lastVariable,
-    loadingSpinner: state.loaders.loadingSpinner
   };
 }
 
 class HomeApp extends Component {
   static propTypes = {
-    setLoadingSpinner: PropTypes.func,
-    openDrawer: PropTypes.func,
-    fetchLastVariable: PropTypes.func,
-    deleteVariable: PropTypes.func,
   };
 
   constructor(props) {
     super(props);
     this.state = {
-      refreshing: false
+      refreshing: false,
+      gps: false,
+      latitude: "",
+      longitude: ""
     };
   }
 
-  async componentDidMount(){
-    console.log("APP STARTED")
-    await this.props.setLoadingSpinner(true);
-    await this.props.fetchLastVariable();
+  logOut() {
+    let URL = `${config.serverSideUrl}:${config.port}/logout`;
+    axios.get( URL)
+      .then( res => {
+        console.log("LOGOUT RES: ", res);
+        Actions.reset('signUp')
+      })
+      .catch(e => {
+        console.log("ERROR LOGOUT", e.response);
+      })
+
   }
 
-  getDateForHumans(date){
-    return moment(date, "YYYY-MM-DD HH:mm:ss").format("ddd DD HH:mm")
+
+  componentWillMount() {
+    if (Platform.OS === 'android' && !Constants.isDevice) {
+      this.setState({
+        errorMessage: 'Oops, this will not work on Sketch in an Android emulator. Try it on your device!',
+      });
+    } else {
+      this._getLocationAsync();
+    }
   }
 
-  async handleRefresh(){
-    await this.setState({ refreshing: true})
-    await this.props.fetchLastVariable();
-    await this.setState({ refreshing: false})
-  }
+  _getLocationAsync = async () => {
+    let { status } = await Permissions.askAsync(Permissions.LOCATION);
+    if (status !== 'granted') {
+      this.setState({
+        errorMessage: 'Permission to access location was denied',
+      });
+    }
 
-  _renderVariable( item ){
-        return (
-            <TouchableOpacity
-              style={styles.rowItem}
-            >
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>PH:</Text>
-                <Text style={styles.listText}>{item.ph}</Text>
-              </Text>
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>Humedad:</Text>
-                <Text style={styles.listText}>{item.humidity}</Text>
-              </Text>
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>Temperatura:</Text>
-                <Text style={styles.listText}>{item.temperature}</Text>
-              </Text>
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>Solución 1:</Text>
-                <Text style={styles.listText}>{item.solution1}</Text>
-              </Text>
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>Solución 2:</Text>
-                <Text style={styles.listText}>{item.solution2}</Text>
-              </Text>
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>Agua:</Text>
-                <Text style={styles.listText}>{item.water}</Text>
-              </Text>
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>Luz:</Text>
-                <Text style={styles.listText}>{item.light}</Text>
-              </Text>
-              <Text style={styles.marginRight10}>
-                <Text style={styles.listBoldText}>CO2:</Text>
-                <Text style={styles.listText}>{item.co2}</Text>
-              </Text>
-            </TouchableOpacity>
-        );
-  }
+    
+      let location = await Location.watchPositionAsync({
+        enableHighAccuracy: true,
+        distanceInterval: 5,
+        timeInterval: 5000
+      },
+        newLocation => {
+          if (this.state.gps) {
+              let coords = newLocation.coords;
+              this.setState({
+                  latitude: parseFloat(coords.latitude),
+                  longitude: parseFloat(coords.longitude)
+              })
 
-  getDataToFlatList(){
-    let data = []
-    data.push(this.props.lastVariable)
-    return data;
-  }
+              let data = {
+                latitude: this.state.latitude,
+                longitude: this.state.longitude,
+              }
+
+              let URL = `${config.serverSideUrl}:${config.port}/geolocation/add`;
+
+              axios.post( URL, data)
+              .then( res => {
+                console.log("ADD GEO RES: ", res.data);
+              })
+              .catch(e => {
+                console.log("ERROR ADD GEO", e.response);
+              })
+            }
+          });
+  };
+
 
   render() {
     return (
       <Container style={{backgroundColor: "#F2F2F2"}}>
-        <Header style={styles.header}>
-          <Left/>
-          <Body style={{flex: 3}} >
-            <Text style={styles.headerTitle}>SmartPonia</Text>
-          </Body>
-          <Right />
-        </Header>
-        <View style={{flex: 1}}>
+        
+        <SafeAreaView style={{backgroundColor: "#35495e"}}>
+          <Header style={styles.header}>
+            <Left>
+              <Button 
+                style={{ backgroundColor: "transparent" }}
+                onPress={() => this.logOut()}
+              >
+                <Icon active name="arrow-back" />
+              </Button>
+            </Left>
+            <Body style={{flex: 3}} >
+              <Text style={styles.headerTitle}>GeoSensing</Text>
+            </Body>
+            <Right>
+            <Button 
+                style={{ backgroundColor: "transparent" }}
+                onPress={() => this.logOut()}
+              >
+                <Icon active name="log-out" />
+              </Button>
+            </Right>
+          </Header>
+          </SafeAreaView>
+          <View style={{flex: 1}}>
+
+            <View style={{padding: 30}}>
+
+              <View style={{flexDirection: "row", paddingRight: 30, marginTop: 30, marginBottom: 30}}>
+                <Text style={{fontSize: 16, color: "black", marginLeft: 15}}>Geolocalización: </Text>
+                <Switch 
+                  style={{ marginLeft: 40}}
+                  value={this.state.gps}
+                  onValueChange={(value) => this.setState({gps: value})}
+                />
+              </View>
+
+              <Text style={{fontSize: 16, color: "black", margin: 15}}>
+                Latitud: {JSON.stringify(this.state.latitude)}
+              </Text>
+              <Text style={{fontSize: 16, color: "black", margin: 15}}>
+                Longitud: {JSON.stringify(this.state.longitude)}
+              </Text>
+
+            </View>
+
+            
+
+            
+          </View>
+          <FooterMenu/>
           
-          {this.props.loadingSpinner ? <Spinner color="black" /> :
-            <FlatList
-              ref={elm => this.flatList = elm}
-              data={this.getDataToFlatList()}
-              renderItem={({ item }) => this._renderVariable(item) }
-              keyExtractor={(item, index) => item._id}
-              onRefresh={() => this.handleRefresh()}
-              refreshing={this.state.refreshing}
-              inverted={false}
-              removeClippedSubviews={true}
-            />
-          }
-        </View>
-        <FooterMenu/>
       </Container>
+      
 
     );
   }
@@ -151,10 +183,6 @@ class HomeApp extends Component {
 function bindActions(dispatch) {
   return {
     openDrawer: () => dispatch(openDrawer()),
-    setLoadingSpinner: visible => dispatch(setLoadingSpinner(visible)),
-    fetchLastVariable: () => dispatch(fetchLastVariable()),
-    deleteVariable: (variable) => dispatch(deleteVariable(variable)),
-    
   };
 }
 

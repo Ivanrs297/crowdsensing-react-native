@@ -1,4 +1,5 @@
 // @flow
+import axios from 'axios';
 import React, { Component } from "react";
 import { Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
 import {
@@ -32,13 +33,12 @@ import {
  import { 
   login,
  } from "../../actions/auth"
-
+import config from "../../config"
 var { width, height } = Dimensions.get('window');
 
 function mapStateToProps(state) {
   return {
     lastVariable: state.variables.lastVariable,
-    loadingSpinner: state.loaders.loadingSpinner
   };
 }
 
@@ -56,21 +56,54 @@ class LogIn extends Component {
     this.state = {
         user: "",
         password: "",
+        loadingSpinner: false
     };
   }
 
   componentDidMount(){
   }
 
-  handleLogIn( guest ) {
-    this.props.setLoadingSpinner(true)
-
+  handleLogIn() {
+    this.setState({loadingSpinner: true})
     let loginObj = {
-        email: guest ? 'invitado@invitado.com' : this.state.user,
-        password: guest ? '123' : this.state.password
-    }
-    this.props.login(loginObj);
+      username: this.state.user,
+      password: this.state.password
+  }
 
+  let URL = `${config.serverSideUrl}:${config.port}/signin`;
+
+  axios.post( URL, loginObj )
+    .then( res => {
+      console.log("login RES: ", res.data);
+      if (res.data.success){
+        Actions.home()
+        return;
+      }
+      
+    })
+    .catch(e => {
+      console.log("ERROR register", e.response);
+      Alert.alert(
+          'Error',
+          'Ha habido un problema, intenta de nuevo',
+          [
+              {text: 'Aceptar', onPress: () => console.log('OK Pressed')},
+          ],
+           { cancelable: false }
+          )
+    })
+    this.setState({loadingSpinner: true})
+
+  }
+
+  validateForm() {
+    if (!this.state.user || 
+        !this.state.password
+    ) {
+      return true
+    } else {
+      return false
+    }
   }
 
   render() {
@@ -81,7 +114,7 @@ class LogIn extends Component {
             source={require('../../../assets/icon_white.png')}
             style={styles.logoImg}
           />
-        <Text style={styles.title}>Crowdsensing</Text>
+        <Text style={styles.title}>GeoSensing</Text>
 
         <TextInput
             style={styles.input}
@@ -107,24 +140,14 @@ class LogIn extends Component {
 
         <Button
             block
-            style={styles.btnPrimary}
-            //onPress={() => this.handleLogIn(false)}
-            disabled={!this.state.user || !this.state.password}
+            style={this.validateForm() ? styles.btnPrimaryDisabled : styles.btnPrimary}
+            onPress={() => this.handleLogIn()}
+            // onPress={() => Actions.home()}
+            disabled={this.validateForm()}
         >
-          {this.props.loadingSpinner ? 
+          {this.state.loadingSpinner ? 
             <Spinner color="black" />
           : <Text style={styles.txtBtnPrimary}>Iniciar Sesión</Text>
-          }
-        </Button>
-
-        <Button
-            block
-            style={styles.btnSecondary}
-            // onPress={() => this.handleLogIn(true)}
-        >
-          {this.props.loadingSpinner ? 
-            <Spinner color="black" />
-          : <Text style={styles.txtBtnSecondary}>Invitado</Text>
           }
         </Button>
 

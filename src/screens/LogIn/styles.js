@@ -204,6 +204,11 @@ export default {
       marginVertical: 10,
       marginHorizontal: 20,
   },
+  btnPrimaryDisabled: {
+    backgroundColor: "gray",
+    marginVertical: 10,
+    marginHorizontal: 20,
+  },
   btnSecondary: {
     backgroundColor: "#35495e",
     marginVertical: 10,
