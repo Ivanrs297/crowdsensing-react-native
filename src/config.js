@@ -3,8 +3,11 @@ export default {
     // serverSideUrl: "http://localhost",
     // port: 4000,
 
-  //server
+  // //server
     serverSideUrl: "https://crowdsensing-api-server.herokuapp.com",
     port: 443,
+
+
+
   };
   

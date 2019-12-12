@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from "react";
-import { Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
+import { KeyboardAvoidingView, Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
 import axios from 'axios';
 import {
   Container,
@@ -60,15 +60,30 @@ class LogIn extends Component {
         password: "",
         fname: "",
         lname: "",
-        genre: "",
+        genre: 'none',
         age: "",
-        area: "",
-        place: "",
+        area: '0',
+        place: '0',
         loadingSpinner: false
     };
   }
 
-  componentDidMount(){
+  handleChangeGenre (val) {
+    if (val !== 'none') {
+      this.setState({genre: val});
+    }
+  }
+
+  handleChangeArea (val) {
+    if (val !== 'none') {
+      this.setState({area: val});
+    }
+  }
+
+  handleChangePlace (val) {
+    if (val !== 'none') {
+      this.setState({place: val});
+    }
   }
 
   handleRegister() {
@@ -80,6 +95,7 @@ class LogIn extends Component {
         genre: this.state.genre,
         age: this.state.age,
         speciality: this.state.area,
+        place: this.state.place,
     }
 
     let URL = `${config.serverSideUrl}:${config.port}/signup`;
@@ -125,7 +141,10 @@ class LogIn extends Component {
 
   render() {
     return (
-      <Container style={styles.content}>
+
+      <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+
+        <Container style={styles.content}>
 
           <Image
             source={require('../../../assets/icon_white.png')}
@@ -155,7 +174,7 @@ class LogIn extends Component {
             style={styles.input}
             onChangeText={(user) => this.setState({user})}
             value={this.state.user}
-            placeholder="Email"
+            placeholder="Email/Usuario"
             placeholderTextColor="gray"
             autoCapitalize="none"
             autoCorrect={false}
@@ -177,7 +196,7 @@ class LogIn extends Component {
           mode="dropdown"
           style={styles.picker}
           selectedValue={this.state.genre}
-          onValueChange={(genre) => this.setState({genre})}
+          onValueChange={(genre) => this.handleChangeGenre(genre)}
           itemStyle={{color: "black"}}
           itemTextStyle={{color: "black"}}
           textStyle={{color: "black", fontSize: 14}}
@@ -186,6 +205,7 @@ class LogIn extends Component {
           placeholderStyle={{color: "gray"}}
           headerStyle={{backgroundColor: "#2c3e50"}}
         >
+          <Picker.Item label='Selecciona una opción...' value='none' />
           <Picker.Item label="Mujer" value="0" />
           <Picker.Item label="Hombre" value="1" />
         </Picker>
@@ -195,7 +215,7 @@ class LogIn extends Component {
           mode="dropdown"
           style={styles.picker}
           selectedValue={this.state.area}
-          onValueChange={(area) => this.setState({area})}
+          onValueChange={(area) => this.handleChangeArea(area)}
           itemStyle={{color: "black"}}
           itemTextStyle={{color: "black"}}
           textStyle={{color: "black", fontSize: 14}}
@@ -204,6 +224,7 @@ class LogIn extends Component {
           placeholderStyle={{color: "gray"}}
           headerStyle={{backgroundColor: "#2c3e50"}}
         >
+          <Picker.Item label='Selecciona una opción...' value='none' />
           <Picker.Item label="Computación" value="1" />
           <Picker.Item label="Telecomunicaciones" value="2" />
           <Picker.Item label="Control" value="3" />
@@ -227,7 +248,7 @@ class LogIn extends Component {
           mode="dropdown"
           style={styles.picker}
           selectedValue={this.state.place}
-          onValueChange={(place) => this.setState({place})}
+          onValueChange={(place) => this.handleChangePlace(place)}
           itemStyle={{color: "black"}}
           itemTextStyle={{color: "black"}}
           textStyle={{color: "black", fontSize: 14}}
@@ -236,6 +257,7 @@ class LogIn extends Component {
           placeholderStyle={{color: "gray"}}
           headerStyle={{backgroundColor: "#2c3e50"}}
         >
+          <Picker.Item label='Selecciona una opción...' value='none' />
           <Picker.Item label="Guadalajara" value="1" />
           <Picker.Item label="Cuba" value="2" />
           <Picker.Item label="Colima" value="3" />
@@ -262,6 +284,8 @@ class LogIn extends Component {
 
 
       </Container>
+      
+      </KeyboardAvoidingView>
 
     );
   }

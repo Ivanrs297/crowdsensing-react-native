@@ -1,7 +1,7 @@
 // @flow
 import axios from 'axios';
 import React, { Component } from "react";
-import { Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
+import { KeyboardAvoidingView, Alert, ScrollView, FlatList, Image, ImageBackground, TouchableOpacity, Platform, TextInput, Dimensions, TouchableHighlight } from "react-native";
 import {
   Container,
   Header,
@@ -108,7 +108,8 @@ class LogIn extends Component {
 
   render() {
     return (
-      <Container style={styles.content}>
+      <KeyboardAvoidingView style={styles.container} behavior="padding" enabled>
+        <Container style={styles.content}>
 
           <Image
             source={require('../../../assets/icon_white.png')}
@@ -152,6 +153,7 @@ class LogIn extends Component {
         </Button>
 
       </Container>
+      </KeyboardAvoidingView>
 
     );
   }

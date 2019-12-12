@@ -89,8 +89,8 @@ class HomeApp extends Component {
     
       let location = await Location.watchPositionAsync({
         enableHighAccuracy: true,
-        distanceInterval: 5,
-        timeInterval: 5000
+        distanceInterval: 1,
+        timeInterval: 3000
       },
         newLocation => {
           if (this.state.gps) {
